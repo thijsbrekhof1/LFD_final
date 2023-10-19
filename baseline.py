@@ -6,28 +6,12 @@ Students: Joris Ruitenbeek (s4940148), Thijs Brekhof (s3746135), Niels Top (s450
 """
 
 import argparse
-import sys
-
-import spacy
-
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.tree import DecisionTreeClassifier
 from sklearn import svm
-from sklearn.model_selection import GridSearchCV
+from collections import Counter
 
-allowed_algorithms = {
-    "nb": MultinomialNB(),
-    "dt": DecisionTreeClassifier(),
-    "rf": RandomForestClassifier(),
-    "kn": KNeighborsClassifier(),
-    "svm1": svm.SVC(),
-    "svm2": svm.LinearSVC(),
-}
 
 def create_arg_parser():
     """Function that builds up all the arguments used in this script.
@@ -37,23 +21,16 @@ def create_arg_parser():
     parser.add_argument(
         "-tf",
         "--train_file",
-        default="train.txt",
+        default="train.tsv",
         type=str,
         help="Train file to learn from (default train.txt)",
     )
     parser.add_argument(
         "-df",
         "--dev_file",
-        default="dev.txt",
+        default="dev.tsv",
         type=str,
         help="Dev file to evaluate on (default dev.txt)",
-    )
-    parser.add_argument(
-        "-testf",
-        "--test_file",
-        default="test.txt",
-        type=str,
-        help="Dev file to evaluate on (default test.txt)",
     )
 
     parser.add_argument(
@@ -63,11 +40,12 @@ def create_arg_parser():
         type=str,
         help="Vectorizer to use (tfidf or count) (default tfidf)",
     )
+    args = parser.parse_args()
 
     return args
 
 
-def read_corpus(corpus_file, use_sentiment):
+def read_corpus(corpus_file):
 
     """
     Reads the corpus file and gets the documents with labels.
@@ -81,14 +59,10 @@ def read_corpus(corpus_file, use_sentiment):
 
     with open(corpus_file, encoding="utf-8") as in_file:
         for line in in_file:
-            tokens = line.strip().split()
-            documents.append(tokens[3:])
-            if use_sentiment:
-                # 2-class problem: positive vs negative
-                labels.append(tokens[1])
-            else:
-                # 6-class problem: books, camera, dvd, health, music, software
-                labels.append(tokens[0])
+            tokens = line.strip().split("\t")
+            documents.append(tokens[:-1])
+
+            labels.append(tokens[-1])
 
     return documents, labels
 
@@ -124,74 +98,29 @@ def get_vectorizer(vectorizer_name):
         exit(-1)
 
 
-def get_algorithm(algorithm_name):
-    """
-    Checks if the requested algorithm is available and returns the sklearn function for it.
-    If the hyperparameter argument is selected, this function also enables the optimized hyperparameters.
-
-    :param str algorithm_name: Name of the algorithm
-    :return: The used sklearn function of the algorithm
-    """
-
-    if algorithm_name not in allowed_algorithms:
-        print(f"Please use a valid algorithm ({', '.join(allowed_algorithms.keys())})")
-        exit(-1)
-
-    if args.hyperparameter:
-        if args.algorithm == "nb":
-            return MultinomialNB(alpha=0.5)
-        elif args.algorithm == "dt":
-            return DecisionTreeClassifier(
-                criterion="gini", max_depth=20, min_samples_leaf=5, random_state=5
-            )
-        elif args.algorithm == "rf":
-            return RandomForestClassifier(
-                criterion="gini", max_depth=20, min_samples_leaf=2, random_state=5
-            )
-        elif args.algorithm == "kn":
-            return KNeighborsClassifier(
-                n_neighbors=50, weights="distance", p=2, leaf_size=10
-            )
-        elif args.algorithm == "svm1":
-            return svm.SVC(C=0.9, gamma="scale", kernel="linear")
-        elif args.algorithm == "svm2":
-            return svm.LinearSVC(C=1, loss='hinge')
-    else:
-        return allowed_algorithms[algorithm_name]
-
 if __name__ == "__main__":
     # Parse command line arguments
     args = create_arg_parser()
 
     # Load train and test data with their labels
-    X_train, Y_train = read_corpus(args.train_file, args.sentiment)
-    X_test, Y_test = read_corpus(args.dev_file, args.sentiment)
-
-    # Convert lists of tokens into strings for each document
-    X_train_strings = [" ".join(tokens) for tokens in X_train]
-    X_test_strings = [" ".join(tokens) for tokens in X_test]
+    X_train, Y_train = read_corpus(args.train_file)
+    X_test, Y_test = read_corpus(args.dev_file)
 
     # Create vectorizer
-
     vec_word = get_vectorizer(
-        args.vectorizer, args.ngram_range, args.max_df, args.min_df)
+        args.vectorizer)
+
+ #   print(Counter(Y_train))
 
     # Create classifier pipeline
-    cls = get_algorithm(args.algorithm)
+    cls = svm.SVC(random_state=1234, verbose=1)
     classifier = Pipeline([("vec", vec_word), ("cls", cls)])
 
-
-
-
-    X_train_combined = X_train
-    X_test_combined = X_test
-
-
     # fit the classifier on the training data
-    classifier.fit(X_train_combined, Y_train)
+    classifier.fit(X_train, Y_train)
 
     # Make predictions
-    Y_pred = classifier.predict(X_test_combined)
+    Y_pred = classifier.predict(X_test)
 
     # Print the algorithm being used, classification report, and confusion matrix
     print(f"The algorithm being used: {cls}")
