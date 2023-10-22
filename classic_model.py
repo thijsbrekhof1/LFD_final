@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Baseline model for classifying offensive language
+Classic model for classifying offensive language
 Students: Joris Ruitenbeek (s4940148), Thijs Brekhof (s3746135), Niels Top (s4507754)
 """
 
@@ -9,7 +9,7 @@ import argparse
 import sys
 
 import spacy
-
+from collections import Counter
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -20,13 +20,14 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
 allowed_algorithms = {
-    "nb": MultinomialNB(),
-    "dt": DecisionTreeClassifier(),
-    "rf": RandomForestClassifier(),
-    "kn": KNeighborsClassifier(),
-    "svm1": svm.SVC(),
-    "svm2": svm.LinearSVC(),
+    "svm1": svm.SVC(random_state=1234, verbose=1),
+    "svm2": svm.LinearSVC(random_state=1234, verbose=1)
 }
 
 # This is where the spacy model is initialized which is used for lemmatization and obtaining POS tags
@@ -46,30 +47,25 @@ def create_arg_parser():
     parser.add_argument(
         "-alg",
         "--algorithm",
-        default="nb",
+        default="svm",
         type=str,
-        help=f"Algorithm to use (options {', '.join(allowed_algorithms.keys())}) (default nb)",
+        help=f"Algorithm to use (options {', '.join(allowed_algorithms.keys())}) (default svm)",
     )
     parser.add_argument(
         "-tf",
         "--train_file",
-        default="train.txt",
+        default="train.tsv",
         type=str,
-        help="Train file to learn from (default train.txt)",
+        help="Train file to learn from (default train.tsv)",
     )
     parser.add_argument(
         "-df",
         "--dev_file",
-        default="dev.txt",
+        default="dev.tsv",
         type=str,
-        help="Dev file to evaluate on (default dev.txt)",
+        help="Dev file to evaluate on (default dev.tsv)",
     )
-    parser.add_argument(
-        "-s",
-        "--sentiment",
-        action="store_true",
-        help="Do sentiment analysis (2-class problem)",
-    )
+
     parser.add_argument(
         "-gr",
         "--grid",
@@ -128,12 +124,10 @@ def create_arg_parser():
     return args
 
 
-def read_corpus(corpus_file, use_sentiment):
+def read_corpus(corpus_file):
     """
     Reads the corpus file and gets the documents with labels.
-
     :param str corpus_file: Path to the corpus file.
-    :param bool use_sentiment: Switch between the sentiment (pos, neg) or the categorical
     :return: the document
     :return: the labels
     """
@@ -142,14 +136,8 @@ def read_corpus(corpus_file, use_sentiment):
 
     with open(corpus_file, encoding="utf-8") as in_file:
         for line in in_file:
-            tokens = line.strip().split()
-            documents.append(tokens[3:])
-            if use_sentiment:
-                # 2-class problem: positive vs negative
-                labels.append(tokens[1])
-            else:
-                # 6-class problem: books, camera, dvd, health, music, software
-                labels.append(tokens[0])
+            labels.append(line.split()[-1])
+            documents.append(line.split()[:-1])
 
     return documents, labels
 
@@ -235,21 +223,7 @@ def get_algorithm(algorithm_name):
         exit(-1)
 
     if args.hyperparameter:
-        if args.algorithm == "nb":
-            return MultinomialNB(alpha=0.5)
-        elif args.algorithm == "dt":
-            return DecisionTreeClassifier(
-                criterion="gini", max_depth=20, min_samples_leaf=5, random_state=5
-            )
-        elif args.algorithm == "rf":
-            return RandomForestClassifier(
-                criterion="gini", max_depth=20, min_samples_leaf=2, random_state=5
-            )
-        elif args.algorithm == "kn":
-            return KNeighborsClassifier(
-                n_neighbors=50, weights="distance", p=2, leaf_size=10
-            )
-        elif args.algorithm == "svm1":
+        if args.algorithm == "svm1":
             return svm.SVC(C=0.9, gamma="scale", kernel="linear")
         elif args.algorithm == "svm2":
             return svm.LinearSVC(C=1, loss='hinge')
@@ -263,34 +237,7 @@ def tune_param():
     to determine optimal performance.
     """
     # for naive bayes
-    if args.algorithm == "nb":
-        params = {
-            "cls__alpha": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        }
-    # for decision trees
-    elif args.algorithm == "dt":
-        params = {
-            "cls__max_depth": [2, 3, 5, 10, 20],
-            "cls__min_samples_leaf": [5, 10, 20, 50, 100],
-            "cls__criterion": ["gini", "entropy"],
-        }
-    # for random forest
-    elif args.algorithm == "rf":
-        params = {
-            "cls__max_depth": [2, 3, 5, 10, 20],
-            "cls__min_samples_leaf": [2, 5, 10, 20, 50, 100],
-            "cls__criterion": ["gini", "entropy"],
-        }
-    # for knn
-    elif args.algorithm == "kn":
-        params = {
-            "cls__n_neighbors": [5, 10, 20, 30, 50, 100],
-            "cls__weights": ["uniform", "distance"],
-            "cls__p": [1, 2],
-            "cls__leaf_size": [10, 20, 30, 40, 50],
-        }
-    # for C-Support Vector Classification.
-    elif args.algorithm == "svm1":
+    if args.algorithm == "svm1":
         params = {
             "cls__C": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
             "cls__kernel": ["linear", "poly", "rbf", "sigmoid"],
@@ -318,8 +265,8 @@ if __name__ == "__main__":
     args = create_arg_parser()
 
     # Load train and test data with their labels
-    X_train, Y_train = read_corpus(args.train_file, args.sentiment)
-    X_test, Y_test = read_corpus(args.dev_file, args.sentiment)
+    X_train, Y_train = read_corpus(args.train_file)
+    X_test, Y_test = read_corpus(args.dev_file)
 
     # Convert lists of tokens into strings for each document
     X_train_strings = [" ".join(tokens) for tokens in X_train]
@@ -367,6 +314,7 @@ if __name__ == "__main__":
         # If grid search for hyperparameter tuning is enabled, perform it
         tune_param()
     else:
+
         # If not using grid search, fit the classifier on the training data
         classifier.fit(X_train_combined, Y_train)
 
@@ -378,5 +326,10 @@ if __name__ == "__main__":
         print("Classification Report:")
         print(classification_report(Y_test, Y_pred))
 
-        print("Confusion Matrix:")
-        print(confusion_matrix(Y_test, Y_pred))
+        cf_matrix = confusion_matrix(Y_test, Y_pred)
+        index = ["NOT", "OFF"]
+        columns = ["NOT", "OFF"]
+        cm_df = pd.DataFrame(cf_matrix, columns, index)
+        plt.figure(figsize=(10, 6))
+        sns.heatmap(cm_df, annot=True, fmt='g')
+        plt.show()
