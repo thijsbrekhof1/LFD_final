@@ -24,6 +24,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 
+import emoji
 
 allowed_algorithms = {
     "svm1": svm.SVC(random_state=1234, verbose=1),
@@ -119,6 +120,14 @@ def create_arg_parser():
         help="Use POS tagging as additional input features",
     )
 
+    parser.add_argument(
+        "-dem",
+        "--demojize",
+        action="store_true",
+        help="Demojize the input to rewrite emoji's to natural language in order to preserve semantic meaning",
+
+    )
+
     args = parser.parse_args()
 
     return args
@@ -136,9 +145,10 @@ def read_corpus(corpus_file):
 
     with open(corpus_file, encoding="utf-8") as in_file:
         for line in in_file:
-            labels.append(line.split()[-1])
+            if args.demojize:
+                line = emoji.demojize(line)
             documents.append(line.split()[:-1])
-
+            labels.append(line.split()[-1])
     return documents, labels
 
 
@@ -316,6 +326,8 @@ if __name__ == "__main__":
     else:
 
         # If not using grid search, fit the classifier on the training data
+        print(X_train_combined[0:25])
+
         classifier.fit(X_train_combined, Y_train)
 
         # Make predictions
