@@ -14,7 +14,7 @@ with different models including linear models, LSTM, and pre-trained BERT with f
 submissions for all three subtasks only used
 BERT, which performed best during development. They also used a number of preprocessing techniques such as hashtag segmentation and emoji substitution.
 
-## from https://aclanthology.org/S19-2011/:
+## from NULI paper https://aclanthology.org/S19-2011/:
 Emoji substitution We use one online emoji
 project on github (https://github.com/carpedm20/emoji) which could map the emoji unicode to substituted phrase. We treat such phrases
 into regular English phrase thus it could maintain their semantic meanings, especially when the dataset size is limited.
