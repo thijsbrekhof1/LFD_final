@@ -19,4 +19,12 @@ Emoji substitution We use one online emoji
 project on github (https://github.com/carpedm20/emoji) which could map the emoji unicode to substituted phrase. We treat such phrases
 into regular English phrase thus it could maintain their semantic meanings, especially when the dataset size is limited.
 
-
+## From the same paper:
+HashTag segmentation (using https://github.com/grantjenks/python-wordsegment) The HashTag becomes
+a popular culture cross multi social networks, including Twitter, Instagram, Facebook etc. In order
+to detect whether the HashTag contains profanity words, we apply word segmentation using one
+open source on the github 3
+. One typical example
+would be ‘#LunaticLeft’ is segmented as ‘Lunatic
+Left’ which is obviously offensive in this case.
+using 
