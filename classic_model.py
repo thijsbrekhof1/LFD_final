@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 import emoji
+from wordsegment import load, segment
 
 allowed_algorithms = {
     "svm1": svm.SVC(random_state=1234, verbose=1),
@@ -128,6 +129,14 @@ def create_arg_parser():
 
     )
 
+    parser.add_argument(
+        "-seg",
+        "--wordsegment",
+        action="store_true",
+        help="Perform wordsegmentation on hashtags to better detect profanity and other offensive language ",
+
+    )
+
     args = parser.parse_args()
 
     return args
@@ -147,8 +156,16 @@ def read_corpus(corpus_file):
         for line in in_file:
             if args.demojize:
                 line = emoji.demojize(line)
+
+            if args.wordsegment:
+                for word in line.split():
+                    if "#" in word:
+                        line = line.replace(word, " ".join(segment(word)))
+
             documents.append(line.split()[:-1])
             labels.append(line.split()[-1])
+
+
     return documents, labels
 
 
@@ -274,6 +291,9 @@ if __name__ == "__main__":
     # Parse command line arguments
     args = create_arg_parser()
 
+    if args.wordsegment:
+        load()
+
     # Load train and test data with their labels
     X_train, Y_train = read_corpus(args.train_file)
     X_test, Y_test = read_corpus(args.dev_file)
@@ -326,8 +346,6 @@ if __name__ == "__main__":
     else:
 
         # If not using grid search, fit the classifier on the training data
-        print(X_train_combined[0:25])
-
         classifier.fit(X_train_combined, Y_train)
 
         # Make predictions
