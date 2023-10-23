@@ -13,4 +13,5 @@ A, B, and C, respectively. They experimented
 with different models including linear models, LSTM, and pre-trained BERT with finetuning on the OLID dataset. Their final
 submissions for all three subtasks only used
 BERT, which performed best during development. They also used a number of preprocessing techniques such as hashtag segmentation and emoji substitution.
+
 https://aclanthology.org/S19-2011/
