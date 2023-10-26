@@ -28,8 +28,8 @@ import emoji
 from wordsegment import load, segment
 
 allowed_algorithms = {
-    "svm1": svm.SVC(random_state=1234),
-    "svm2": svm.LinearSVC(random_state=1234)
+    "svm1": svm.SVC(random_state=1234, verbose=1),
+    "svm2": svm.LinearSVC(random_state=1234, verbose=1)
 }
 
 # This is where the spacy model is initialized which is used for lemmatization and obtaining POS tags
@@ -165,6 +165,7 @@ def read_corpus(corpus_file):
         for line in in_file:
             if args.demojize:
                 line = emoji.demojize(line)
+
             elif args.demojize_clean:
                 line = emoji.demojize(line)
                 for word in line.split():
@@ -175,6 +176,7 @@ def read_corpus(corpus_file):
                 for word in line.split():
                     if "#" in word:
                         line = line.replace(word, " ".join(segment(word)))
+
 
             documents.append(line.split()[:-1])
             labels.append(line.split()[-1])
@@ -267,7 +269,7 @@ def get_algorithm(algorithm_name):
         if args.algorithm == "svm1":
             return svm.SVC(C=1.0, gamma="scale", kernel="linear")
         elif args.algorithm == "svm2":
-            return svm.LinearSVC(C=1, loss='hinge')
+            return svm.LinearSVC(C=1.0, loss='squared_hinge')
     else:
         return allowed_algorithms[algorithm_name]
 
@@ -288,7 +290,7 @@ def tune_param():
     elif args.algorithm == "svm2":
         params = {
             "cls__loss": ["hinge", "squared_hinge"],
-            "cls__C": [1.0, 0.1, 0.01, 0.001],
+            "cls__C": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0],
         }
     else:
         params = {}
@@ -305,7 +307,7 @@ if __name__ == "__main__":
     # Parse command line arguments
     args = create_arg_parser()
 
-    if args.wordsegment:
+    if args.wordsegment or args.demojize_clean:
         load()
 
     # Load train and test data with their labels
@@ -358,7 +360,6 @@ if __name__ == "__main__":
         # If grid search for hyperparameter tuning is enabled, perform it
         tune_param()
     else:
-
         # If not using grid search, fit the classifier on the training data
         classifier.fit(X_train_combined, Y_train)
 

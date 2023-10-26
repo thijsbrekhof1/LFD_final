@@ -1,3 +1,27 @@
+Conclusions:
+
+For classic models only hashtag segmentation worked for preprocessing, demojizing did not affect scores.
+
+Baseline SVM1 0.73 acc 0.68 f1 score on dev
+baseline svm1 with emoji/hashtag segmentation 0.73 acc 0.69 f1 on dev
+
+baseline svm2 0.72 acc 0.71 f1 on dev
+baseline svm2 with emoji/hashtag segmentation 0.73 acc 0.72 f1 on dev
+
+So best baseline is using svm2 with emoji(-dem) /hashtag segmentation. Tested on test set: 0.76 acc 0.74 f1
+baseline svm 1 with emoji(-dem) /hashtag segmentation. Tested on test set: 0.74 f1
+
+SVM1 with optimal hyperparams (after gridsearch) (adding any features didnt help scores)
+results in 0.73 accuracy, 0.70 f1 score on dev,
+0.79 acc and 0.77 f1 on test with -dem and -seg, -demclean f1 is 0.76 (worse)
+not using -seg = 0.75 f1 (worse)
+not using any emoji cleaning -> no diff in scores dus emoji cleaning voor svm1 is useless, -demclean zelfs slecht
+
+SVM2 with optimal hyperparams (after gridsearch) = default hyper params
+ngram range 1,2 = 0.73 f1 0.74 acc on dev, 0.76 acc 0.75 f1 on test
+without seg = 0.76 acc 0.74 f1 on test
+not using any emoji cleaning -> no diff in scores dus emoji cleaning voor svm2 is useless, -demclean zelfs slecht
+
 Baseline SVM on dev set:
 
 Classification Report:
@@ -23,7 +47,7 @@ Baseline using preprocessing of hashtag and emoji, both emoji changing methods y
 weighted avg       0.76      0.73      0.69      1000
 
 
-Classic model (SVM) notes:
+Classic model (SVM1) notes:
 vectorizer -> tftidf superior over count
 ngram 1,2 (0.03 f1 less) or 1,3 (0.05 f1 less) -> scores worse while model takes longer to run
 maxdf does nothing from values 1.0 until 0.7 after which scores just become worse
@@ -40,7 +64,41 @@ possible parameters:
 
 Best Score:  0.7437091503267974
 Best Params:  {'cls__C': 1.0, 'cls__gamma': 'scale', 'cls__kernel': 'linear'}
-results in 0.70 f1 score with 0.73 using -dem, same f1 but 0.72 accuracy using -demclean
+results in 0.70 f1 score with 0.73 using -dem, same f1 but 0.72 accuracy using -demclean (on dev)
+results on test: 0.79 accuracy and 0.76 f1 score using -seg and -demclean
+0.77 f1 using -dem and -seg 0.79 acc
+running with -seg reduces f1 by 2%
+
+Tests using linearSVC (svm2)
+
+The algorithm being used: LinearSVC(random_state=1234)
+Classification Report:
+              precision    recall  f1-score   support
+
+         NOT       0.75      0.86      0.80       648
+         OFF       0.64      0.47      0.54       352
+
+    accuracy                           0.72      1000
+   macro avg       0.70      0.66      0.67      1000
+weighted avg       0.71      0.72      0.71      1000
+
+-dem did nothing, -demclain raises accuracy by 1% but no change in f1 (at least not 1% or more)
+-seg = 1% better f1
+-demclean and -seg together = best scores so far, 72% f1
+-vec = tfidf better than count
+ngram 1,2 actually 0.73 f1, ngram 1,3 = bad
+maxdf 1->0.5 does nothing, lower values make for worse f1
+mindf 0.05 = way worse, 0.01 considerably worse still, looks like mindf also not improvign scores
+lemma -> program slower but scores the same
+pos -> worse scores
+
+running grid search with following parameter options:
+"cls__loss": ["hinge", "squared_hinge"],
+"cls__C": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0]
+best score: c=1.0, loss=squared_hinge (default)
+
+Conclusion: best performing model = svm2 using default hyperparams with ngrams of range 1,2
+-> accuracy of 0.74 and f1 of 0.73 on dev and accuracy of 0.76  and f1 of 0.75 on test
 
 Papers from shared task that used SVM with scores on test set:
 70% ish SVM - https://aclanthology.org/S19-2107.pdf
