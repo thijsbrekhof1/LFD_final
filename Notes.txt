@@ -11,7 +11,7 @@ Classification Report:
 weighted avg       0.75      0.73      0.68      1000
 
 
-Baseline using preprocessing of hashtag and emoji:
+Baseline using preprocessing of hashtag and emoji, both emoji changing methods yielded the same scores:
 
               precision    recall  f1-score   support
 
@@ -23,7 +23,6 @@ Baseline using preprocessing of hashtag and emoji:
 weighted avg       0.76      0.73      0.69      1000
 
 
-
 Classic model (SVM) notes:
 vectorizer -> tftidf superior over count
 ngram 1,2 (0.03 f1 less) or 1,3 (0.05 f1 less) -> scores worse while model takes longer to run
@@ -31,10 +30,37 @@ maxdf does nothing from values 1.0 until 0.7 after which scores just become wors
 mindf 0.05->0.01 = bad, 0.0005 vert close to baseline dus lower = better (werkt dus niet)
 
 lemmatising -> 0 difference
-
 pos tags -> way worse scores (0.51 f1)
 
+running grid search
+possible parameters:
+"cls__C": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0],
+"cls__kernel": ["linear", "poly", "rbf", "sigmoid"],
+"cls__gamma": ["scale", "auto", 1, 0.1, 0.01]
+
+Best Score:  0.7437091503267974
+Best Params:  {'cls__C': 1.0, 'cls__gamma': 'scale', 'cls__kernel': 'linear'}
+results in 0.70 f1 score with 0.73 using -dem, same f1 but 0.72 accuracy using -demclean
 
 Papers from shared task that used SVM with scores on test set:
 70% ish SVM - https://aclanthology.org/S19-2107.pdf
 72% SVM - https://aclanthology.org/S19-2115.pdf
+
+Using check_stats.py getting some statistics:
+
+Total emoji's in train set: 562
+Total amount of tweets containing emoji's in train set: 500
+Total hashtags in train set: 4793
+Total amount of tweets containing hashtags in train set: 1783
+
+Total emoji's in dev set: 49
+Total amount of tweets containing emoji's in dev set: 43
+Total hashtags in dev set: 467
+Total amount of tweets containing hashtags in dev set: 153
+
+Total emoji's in test set: 42
+Total amount of tweets containing emoji's in test set: 38
+Total hashtags in test set: 1904
+Total amount of tweets containing hashtags in test set: 634
+
+

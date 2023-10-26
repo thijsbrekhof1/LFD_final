@@ -28,8 +28,8 @@ import emoji
 from wordsegment import load, segment
 
 allowed_algorithms = {
-    "svm1": svm.SVC(random_state=1234, verbose=1),
-    "svm2": svm.LinearSVC(random_state=1234, verbose=1)
+    "svm1": svm.SVC(random_state=1234),
+    "svm2": svm.LinearSVC(random_state=1234)
 }
 
 # This is where the spacy model is initialized which is used for lemmatization and obtaining POS tags
@@ -120,12 +120,21 @@ def create_arg_parser():
         action="store_true",
         help="Use POS tagging as additional input features",
     )
-
+    # Emoji to textual representation
     parser.add_argument(
         "-dem",
         "--demojize",
         action="store_true",
-        help="Demojize the input to rewrite emoji's to natural language in order to preserve semantic meaning",
+        help="Demojize the input to rewrite emoji's to their textual representation e.g.,  ❤ -> :heart: ",
+
+    )
+    # Emoji to natural language
+    parser.add_argument(
+        "-demclean",
+        "--demojize_clean",
+        action="store_true",
+        help="Demojize the input to rewrite emoji's to natural language in order to preserve semantic meaning eg., "
+             "❤ -> heart",
 
     )
 
@@ -156,6 +165,11 @@ def read_corpus(corpus_file):
         for line in in_file:
             if args.demojize:
                 line = emoji.demojize(line)
+            elif args.demojize_clean:
+                line = emoji.demojize(line)
+                for word in line.split():
+                    if word[0] == ":" and word[-1] == ":":
+                        line = line.replace(word, " ".join(segment(word)))
 
             if args.wordsegment:
                 for word in line.split():
@@ -251,7 +265,7 @@ def get_algorithm(algorithm_name):
 
     if args.hyperparameter:
         if args.algorithm == "svm1":
-            return svm.SVC(C=0.9, gamma="scale", kernel="linear")
+            return svm.SVC(C=1.0, gamma="scale", kernel="linear")
         elif args.algorithm == "svm2":
             return svm.LinearSVC(C=1, loss='hinge')
     else:
@@ -266,9 +280,9 @@ def tune_param():
     # for naive bayes
     if args.algorithm == "svm1":
         params = {
-            "cls__C": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+            "cls__C": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0],
             "cls__kernel": ["linear", "poly", "rbf", "sigmoid"],
-            "cls__gamma": ["scale", "auto"],
+            "cls__gamma": ["scale", "auto", 1, 0.1, 0.01],
         }
     # For Linear Support Vector Classification.
     elif args.algorithm == "svm2":
