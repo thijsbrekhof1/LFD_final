@@ -28,8 +28,8 @@ import emoji
 from wordsegment import load, segment
 
 allowed_algorithms = {
-    "svm1": svm.SVC(random_state=1234, verbose=1),
-    "svm2": svm.LinearSVC(random_state=1234, verbose=1)
+    "svm1": svm.SVC(verbose=1),
+    "svm2": svm.LinearSVC(verbose=1)
 }
 
 # This is where the spacy model is initialized which is used for lemmatization and obtaining POS tags

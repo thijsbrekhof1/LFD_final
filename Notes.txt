@@ -1,4 +1,5 @@
 Conclusions:
+(check classic_model_scores.png for a quick overview)
 
 For classic models only hashtag segmentation worked for preprocessing, demojizing did not affect scores.
 
