@@ -9,14 +9,11 @@ import argparse
 import sys
 
 import spacy
-from collections import Counter
-from sklearn.ensemble import RandomForestClassifier
+
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.tree import DecisionTreeClassifier
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
 
