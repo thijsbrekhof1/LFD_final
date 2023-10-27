@@ -121,5 +121,3 @@ Total emoji's in test set: 42
 Total amount of tweets containing emoji's in test set: 38
 Total hashtags in test set: 1904
 Total amount of tweets containing hashtags in test set: 634
-
-
