@@ -111,13 +111,21 @@ Total emoji's in train set: 562
 Total amount of tweets containing emoji's in train set: 500
 Total hashtags in train set: 4793
 Total amount of tweets containing hashtags in train set: 1783
+Total amount of hashtags that consist of multiple words in train set: 2262
+Total amount of words that were split by segmentation: 5779
 
 Total emoji's in dev set: 49
 Total amount of tweets containing emoji's in dev set: 43
 Total hashtags in dev set: 467
 Total amount of tweets containing hashtags in dev set: 153
+Total amount of hashtags that consist of multiple words: 237
+Total amount of words that were split by segmentation: 615
 
 Total emoji's in test set: 42
 Total amount of tweets containing emoji's in test set: 38
 Total hashtags in test set: 1904
 Total amount of tweets containing hashtags in test set: 634
+Total amount of hashtags that consist of multiple words in train set: 904
+Total amount of words that were split by segmentation: 2366
+
+
