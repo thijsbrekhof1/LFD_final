@@ -23,6 +23,22 @@ nog ff toevoegen
 ## PTLM
 nog ff toevoegen
 
+# How to install dependencies
+
+# How to preprocess our data
+All preprocessing steps that we apply on our data happen within the scripts for each of our models. 
+
+They can be specified using the command-line arguments, namely:
+
+ -dem for substituting emojis for a textual representation;
+ -demclean for substituting emojis for natural language;
+ -seg for applying hashtag segmentation
+ 
+# How to train the models on the data
+Our scripts all apply training to models based on our dataset. 
+
+It is possible to specify the training file and test file by using the -tf and -df command line arguments respectively, followed by the name of the file you want to utilize.
+
 # Authors
 Thijs Brekhof    https://github.com/thijsbrekhof1
 
