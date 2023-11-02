@@ -5,7 +5,8 @@ This is the github repo that we used while working on our final LFD project, reg
 
 ## General notes
 Download our data (train/dev/test .tsv file) and put it in the same folder as the model you want to be using. (Or clone the repository)
-Download all packages and modules specified in our import statements
+
+Download all packages and modules specified in our import statements.
 
 ## Baseline
 Our baseline model can be found under 'baseline.py'. The program does not require any default command-line arguments to be specified to run, though you can optionally change settings like which algorithm to use by specifying command-line arguments. Running the program with the argument -h will show all possible command-line arguments and their options.  
