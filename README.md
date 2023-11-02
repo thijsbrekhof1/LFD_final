@@ -22,7 +22,9 @@ nog ff toevoegen
 
 # Authors
 Thijs Brekhof    https://github.com/thijsbrekhof1
+
 Niels Top        https://github.com/nitgi
+
 Joris Ruitenbeek https://github.com/iJoris
 
 
