@@ -31,7 +31,9 @@ All preprocessing steps that we apply on our data happen within the scripts for 
 They can be specified using the command-line arguments, namely:
 
  -dem for substituting emojis for a textual representation;
+ 
  -demclean for substituting emojis for natural language;
+ 
  -seg for applying hashtag segmentation
  
 # How to train the models on the data
