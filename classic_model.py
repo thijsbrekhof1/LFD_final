@@ -7,22 +7,18 @@ Students: Joris Ruitenbeek (s4940148), Thijs Brekhof (s3746135), Niels Top (s450
 
 import argparse
 import sys
-
 import spacy
-
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn import svm
 from sklearn.model_selection import GridSearchCV
-
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
-
 import emoji
 from wordsegment import load, segment
+from collections import Counter
 
 allowed_algorithms = {
     "svm1": svm.SVC(verbose=1),
@@ -159,16 +155,18 @@ def read_corpus(corpus_file):
     labels = []
 
     with open(corpus_file, encoding="utf-8") as in_file:
+
         for line in in_file:
+            # emoji substitution for textual representation
             if args.demojize:
                 line = emoji.demojize(line)
-
+            # emoji substitution for natural language
             elif args.demojize_clean:
                 line = emoji.demojize(line)
                 for word in line.split():
                     if word[0] == ":" and word[-1] == ":":
                         line = line.replace(word, " ".join(segment(word)))
-
+            # Hashtag segmentation
             if args.wordsegment:
                 for word in line.split():
                     if "#" in word:
@@ -265,6 +263,7 @@ def get_algorithm(algorithm_name):
     if args.hyperparameter:
         if args.algorithm == "svm1":
             return svm.SVC(C=1.0, gamma="scale", kernel="linear")
+
         elif args.algorithm == "svm2":
             return svm.LinearSVC(C=1.0, loss='squared_hinge')
     else:
@@ -304,12 +303,15 @@ if __name__ == "__main__":
     # Parse command line arguments
     args = create_arg_parser()
 
+    # Loading the word segmentation alg when needed
     if args.wordsegment or args.demojize_clean:
         load()
 
     # Load train and test data with their labels
     X_train, Y_train = read_corpus(args.train_file)
     X_test, Y_test = read_corpus(args.dev_file)
+
+    print(Counter(Y_test))
 
     # Convert lists of tokens into strings for each document
     X_train_strings = [" ".join(tokens) for tokens in X_train]
@@ -366,7 +368,7 @@ if __name__ == "__main__":
         # Print the algorithm being used, classification report, and confusion matrix
         print(f"The algorithm being used: {cls}")
         print("Classification Report:")
-        print(classification_report(Y_test, Y_pred))
+        print(classification_report(Y_test, Y_pred, digits=3))
 
         cf_matrix = confusion_matrix(Y_test, Y_pred)
         index = ["NOT", "OFF"]
