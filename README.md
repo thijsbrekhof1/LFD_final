@@ -23,8 +23,6 @@ nog ff toevoegen
 ## PTLM
 nog ff toevoegen
 
-# How to install dependencies
-
 # How to preprocess our data
 All preprocessing steps that we apply on our data happen within the scripts for each of our models. 
 
