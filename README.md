@@ -1,6 +1,30 @@
 # LFD_final
 This is the github repo that we used while working on our final LFD project, regarding offensive language detection
 
+# How to run our code
+
+## General notes
+Download our data (train/dev/test .tsv file) and put it in the same folder as the model you want to be using. (Or clone the repository)
+Download all packages and modules specified in our import statements
+
+## Baseline
+Our baseline model can be found under 'baseline.py'. The program does not require any default command-line arguments to be specified to run, though you can optionally change settings like which algorithm to use by specifying command-line arguments. Running the program with the argument -h will show all possible command-line arguments and their options.  
+
+## Classic model(s)
+Our baseline model can be found under 'classic_model'. The program does not require any default command-line arguments to be specified to run, though you can optionally change settings like which algorithm to use by specifying command-line arguments. Running the program with the argument -h will show all possible command-line arguments and their options.  
+
+## LSTM
+nog ff toevoegen
+
+## PTLM
+nog ff toevoegen
+
+# Authors
+Thijs Brekhof    https://github.com/thijsbrekhof1
+Niels Top        https://github.com/nitgi
+Joris Ruitenbeek https://github.com/iJoris
+
+
 # Iets om mee te nemen bij het werken aan de LSTM:
 The top nonBERT model, MIDAS, is ranked sixth. They used
 an ensemble of CNN and BLSTM+BGRU, together with Twitter word2vec embeddings (Godin
