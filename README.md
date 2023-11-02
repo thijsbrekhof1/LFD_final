@@ -37,9 +37,9 @@ They can be specified using the command-line arguments, namely:
  -seg for applying hashtag segmentation
  
 # How to train the models on the data
-Our scripts all apply training to models based on our dataset. 
-
 It is possible to specify the training file and test file by using the -tf and -df command line arguments respectively, followed by the name of the file you want to utilize.
+
+e.g., -tf train.tsv -df test.tsv
 
 # Authors
 Thijs Brekhof    https://github.com/thijsbrekhof1
