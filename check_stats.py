@@ -1,4 +1,5 @@
 import emoji
+from wordsegment import load, segment
 
 
 def read_corpus(corpus_file):
@@ -14,7 +15,6 @@ def read_corpus(corpus_file):
         for line in in_file:
             documents.append(line.split()[:-1])
 
-
     return documents
 
 
@@ -28,9 +28,13 @@ def check_emoji(tweets):
             total_emoji += len(emoji.emoji_list(tweet))
     return total_emoji, emoji_tweets
 
+
 def check_hastag(tweets):
     total_hashtag = 0
     hashtag_tweets = 0
+
+    hashtags_segmented = 0
+    segmented_words = 0
 
     for tweet in tweets:
         if "#" in ' '.join(tweet):
@@ -38,41 +42,52 @@ def check_hastag(tweets):
             for word in tweet:
                 if word[0] == "#":
                     total_hashtag += 1
-    return total_hashtag, hashtag_tweets
+                    if len(segment(word)) > 1:
+                        hashtags_segmented += 1
+                        segmented_words += len(segment(word))
+
+    return total_hashtag, hashtag_tweets, hashtags_segmented, segmented_words
 
 
 def main():
+    load()
     X_train = read_corpus("train.tsv")
     X_dev = read_corpus("dev.tsv")
     X_test = read_corpus("test.tsv")
 
     # Train
     total_emoji_train, emoji_tweets_train = check_emoji(X_train)
-    total_hashtag_train, hashtag_tweets_train = check_hastag(X_train)
+    total_hashtag_train, hashtag_tweets_train, hashtags_segmented, segmented_words = check_hastag(X_train)
 
     print("Total emoji's in train set: {}".format(total_emoji_train))
     print("Total amount of tweets containing emoji's in train set: {}".format(emoji_tweets_train))
     print("Total hashtags in train set: {}".format(total_hashtag_train))
     print("Total amount of tweets containing hashtags in train set: {}".format(hashtag_tweets_train))
+    print("Total amount of hashtags that consist of multiple words in train set: {}".format(hashtags_segmented))
+    print("Total amount of words that were split by segmentation: {}".format(segmented_words))
 
     print("\n")
     # Dev
     total_emoji_dev, emoji_tweets_dev = check_emoji(X_dev)
-    total_hashtag_dev, hashtag_tweets_dev = check_hastag(X_dev)
+    total_hashtag_dev, hashtag_tweets_dev, hashtags_segmented, segmented_words = check_hastag(X_dev)
 
     print("Total emoji's in dev set: {}".format(total_emoji_dev))
     print("Total amount of tweets containing emoji's in dev set: {}".format(emoji_tweets_dev))
     print("Total hashtags in dev set: {}".format(total_hashtag_dev))
     print("Total amount of tweets containing hashtags in dev set: {}".format(hashtag_tweets_dev))
-
+    print("Total amount of hashtags that consist of multiple words: {}".format(hashtags_segmented))
+    print("Total amount of words that were split by segmentation: {}".format(segmented_words))
     print("\n")
+
     # test
     total_emoji_test, emoji_tweets_test = check_emoji(X_test)
-    total_hashtag_test, hashtag_tweets_test = check_hastag(X_test)
+    total_hashtag_test, hashtag_tweets_test, hashtags_segmented, segmented_words = check_hastag(X_test)
     print("Total emoji's in test set: {}".format(total_emoji_test))
     print("Total amount of tweets containing emoji's in test set: {}".format(emoji_tweets_test))
     print("Total hashtags in test set: {}".format(total_hashtag_test))
     print("Total amount of tweets containing hashtags in test set: {}".format(hashtag_tweets_test))
+    print("Total amount of hashtags that consist of multiple words in train set: {}".format(hashtags_segmented))
+    print("Total amount of words that were split by segmentation: {}".format(segmented_words))
     print("\n")
 
 

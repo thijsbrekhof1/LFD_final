@@ -13,6 +13,13 @@ from sklearn import svm
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import emoji
+from wordsegment import load, segment
+
+allowed_algorithms = {
+    "svm1": svm.SVC(verbose=1),
+    "svm2": svm.LinearSVC(verbose=1)
+}
 
 
 def create_arg_parser():
@@ -20,6 +27,13 @@ def create_arg_parser():
     :return: the parsed arguments
     """
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-alg",
+        "--algorithm",
+        default="svm",
+        type=str,
+        help=f"Algorithm to use (options {', '.join(allowed_algorithms.keys())}) (default svm)",
+    )
     parser.add_argument(
         "-tf",
         "--train_file",
@@ -40,7 +54,32 @@ def create_arg_parser():
         "--vectorizer",
         default="tfidf",
         type=str,
-        help="Vectorizer to use (tfidf or count) (default tfidf)",
+        help="Vectorizer to use (tfidf or count) (default tfidf), we use tfidf as our baseline vectorizer",
+    )
+    # Emoji to textual representation
+    parser.add_argument(
+        "-dem",
+        "--demojize",
+        action="store_true",
+        help="Demojize the input to rewrite emoji's to their textual representation e.g.,  ❤ -> :heart: ",
+
+    )
+    # Emoji to natural language
+    parser.add_argument(
+        "-demclean",
+        "--demojize_clean",
+        action="store_true",
+        help="Demojize the input to rewrite emoji's to natural language in order to preserve semantic meaning eg., "
+             "❤ -> heart",
+
+    )
+
+    parser.add_argument(
+        "-seg",
+        "--wordsegment",
+        action="store_true",
+        help="Perform wordsegmentation on hashtags to better detect profanity and other offensive language ",
+
     )
     args = parser.parse_args()
 
@@ -58,9 +97,25 @@ def read_corpus(corpus_file):
     labels = []
 
     with open(corpus_file, encoding="utf-8") as in_file:
+
         for line in in_file:
-            labels.append(line.split()[-1])
+            # emoji substitution for textual representation
+            if args.demojize:
+                line = emoji.demojize(line)
+            # emoji substitution for natural language
+            elif args.demojize_clean:
+                line = emoji.demojize(line)
+                for word in line.split():
+                    if word[0] == ":" and word[-1] == ":":
+                        line = line.replace(word, " ".join(segment(word)))
+            # Hashtag segmentation
+            if args.wordsegment:
+                for word in line.split():
+                    if "#" in word:
+                        line = line.replace(word, " ".join(segment(word)))
+
             documents.append(line.split()[:-1])
+            labels.append(line.split()[-1])
 
     return documents, labels
 
@@ -94,10 +149,29 @@ def get_vectorizer(vectorizer_name):
         exit(-1)
 
 
+def get_algorithm(algorithm_name):
+    """
+    Checks if the requested algorithm is available and returns the sklearn function for it.
+
+    :param str algorithm_name: Name of the algorithm
+    :return: The used sklearn function of the algorithm
+    """
+
+    if algorithm_name not in allowed_algorithms:
+        print(f"Please use a valid algorithm ({', '.join(allowed_algorithms.keys())})")
+        exit(-1)
+
+    else:
+        return allowed_algorithms[algorithm_name]
+
+
 if __name__ == "__main__":
     # Parse command line arguments
     args = create_arg_parser()
 
+    # Loading the word segmentation alg when needed
+    if args.wordsegment or args.demojize_clean:
+        load()
     # Load train and test data with their labels
     X_train, Y_train = read_corpus(args.train_file)
     X_test, Y_test = read_corpus(args.dev_file)
@@ -107,7 +181,7 @@ if __name__ == "__main__":
         args.vectorizer)
 
     # Create classifier pipeline
-    cls = svm.SVC(random_state=1234)
+    cls = get_algorithm(args.algorithm)
 
     classifier = Pipeline([("vec", vec_word), ("cls", cls)])
 
@@ -120,7 +194,7 @@ if __name__ == "__main__":
     # Print the algorithm being used, classification report, and confusion matrix
     print(f"The algorithm being used: {cls}")
     print("Classification Report:")
-    print(classification_report(Y_test, Y_pred))
+    print(classification_report(Y_test, Y_pred, digits=3))
 
     cf_matrix = confusion_matrix(Y_test, Y_pred)
     index = ["NOT", "OFF"]
