@@ -1,5 +1,5 @@
 # LFD_final
-This is the github repo that we used while working on our final LFD project, regarding offensive language detection
+This is the Github repo that we used while working on our final LFD project, regarding offensive language detection
 
 # How to run our code
 
@@ -18,7 +18,7 @@ Our baseline model can be found under 'baseline.py'. The program does not requir
 Our baseline model can be found under 'classic_model'. The program does not require any default command-line arguments to be specified to run, though you can optionally change settings like which algorithm to use by specifying command-line arguments. Running the program with the argument -h will show all possible command-line arguments and their options.  
 
 ## LSTM
-nog ff toevoegen
+Our LSTM model can be run with the LSTM notebook. It requires downloading some PIP packages that are stated in the notebook. Besides that, when running GloVe their  twitter embeddings needs to be downloaded and if running fastText their wiki-news-300d-1M-subword embeddings need to be downloaded. The notebook is self-explanatory and can be run off the shelf.
 
 ## PTLM
 Our transformer model(s) can be found under 'transformer.ipynb'. The program can be ran off the shelf, but you can also make some changes to the settings. By default the file loads train, dev and test files from the Google Drive you mount, you can change the location and names of these files in the 'create_arg_parser' function. If you want to change parameters of the model (such as: model used, epochs, optimizer, etc.) you can do this in the 'create_model' function.
