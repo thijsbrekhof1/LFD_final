@@ -21,7 +21,7 @@ Our baseline model can be found under 'classic_model'. The program does not requ
 nog ff toevoegen
 
 ## PTLM
-nog ff toevoegen
+Our transformer model(s) can be found under 'transformer.ipynb'. The program can be ran off the shelf, but you can also make some changes to the settings. By default the file loads train, dev and test files from the Google Drive you mount, you can change the location and names of these files in the 'create_arg_parser' function. If you want to change parameters of the model (such as: model used, epochs, optimizer, etc.) you can do this in the 'create_model' function.
 
 # How to preprocess our data
 All preprocessing steps that we apply on our data happen within the scripts for each of our models. 
